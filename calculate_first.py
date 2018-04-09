@@ -42,7 +42,8 @@ class ff:
       for i in self.prod:
         self.first[i]=self.find_first(i)
       print "first table is"
-      print(self.first)
+      for i in self.first:
+        print i+" "+self.first[i]
 
     
     
