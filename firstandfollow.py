@@ -3,6 +3,7 @@ class ff:
   terminals=[]
   first={}
   follow={}
+  seq=[]
   recursion_depth=0
   def union(self,f,s):
     temp=[]
@@ -19,7 +20,19 @@ class ff:
   def strwonull(self,l):
     l=l.replace("^","")
     return l
-    
+  def getseq(self):
+    for i in self.prod:
+      for j in self.prod[i].split("|"):
+        if len(j)>1:
+          for k in range(1,len(j)):
+            if self.isTerminal(j[k]):
+              if not self.isTerminal(j[k-1]):
+                self.seq.append(j[k-1])
+    for i in self.prod:
+      if i not in self.seq:
+        self.seq.append(i)
+    print "seq is "
+    print self.seq
   def find_follow(self,entry):
     sdf=""
     nt=""
@@ -88,6 +101,7 @@ class ff:
         self.prod[temp[0]]=temp[1]
       temp=raw_input("enter terminals with , separated:")
       self.terminals=temp.split(",")
+      self.getseq()
       for i in self.prod:
         self.first[i]=self.find_first(i)
       print "first table is"
@@ -95,15 +109,16 @@ class ff:
         print i+" "+self.first[i]
       for i in self.prod:
         self.follow[i]="$"
-      for i in self.prod:
+      for i in self.seq:
         a=self.find_follow(i)
         print "found for "+i+" is "+a
         self.follow[i]=self.follow[i]+a
       print "follow table is"
       for i in self.follow:
         print i+" "+self.follow[i]
-      for i in self.prod:
+      for i in self.seq:
         print i
-    
+      
+      
 obj=ff()
 obj.main()
