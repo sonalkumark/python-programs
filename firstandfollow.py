@@ -3,17 +3,7 @@ class ff:
   terminals=[]
   first={}
   follow={}
-  def listtostr(self,c):
-    temp=""
-    for i in c:
-      temp=temp+i
-    return temp
-  def strtolist(self,c):
-    temp=[]
-    for i in c:
-      temp.append(i)
-    return temp
-  
+  recursion_depth=0
   def union(self,f,s):
     temp=[]
     f=self.strtolist(f);
@@ -27,33 +17,37 @@ class ff:
     return temp
     
   def strwonull(self,l):
-    l=self.strtolist(l)
-    l=l.remove('^')
-    l=self.listtostr(l)
+    l=l.replace("^","")
     return l
     
   def find_follow(self,entry):
-    temp=self.prod[entry].split('|')
     sdf=""
     nt=""
     z=""
-    for i in temp:
-      if i.__contains__(entry):
-        try:
-          if self.isTerminal(i[i.index(entry)+1]):
+    for j in self.prod:  
+      for i in self.prod[j].split('|'):
+        i=i+"#"
+        if i.__contains__(entry):
+          print i
+          if i[i.index(entry)+1]=="#":
+            if j==entry:
+              continue
+            if self.follow[j]=="$":
+              self.recursion_depth+=1
+              if self.recursion_depth > 20:
+                continue
+              sdf=sdf+self.find_follow(j)
+            else:
+              self.recursion_depth=0
+              sdf=sdf+self.follow[j]
+          elif self.isTerminal(i[i.index(entry)+1]):
             sdf=sdf+i[i.index(entry)+1]
           elif self.isNonTerminal(i[i.index(entry)+1]):
-            try:
-              z=self.strwonull(self.first[i[i.index(entry)+1]])
-              if self.follow[i[i.index(entry)+1]]!='':
-                z=z+self.follow[i[i.index(entry)+1]]
-              else:
-                z=z+self.find_follow(i[i.index(entry)+1])
-            except:
-              z=z+self.find_follow(self.prod[entry])
-            sdf=z
-        except:
-          z=z+self.find_follow(self.prod[entry])
+            z=self.strwonull(self.first[i[i.index(entry)+1]])
+            if self.follow[i[i.index(entry)+1]]=="$":
+              z=z+self.find_follow(i[i.index(entry)+1])
+            else:
+              z=z+self.follow[i[i.index(entry)+1]]
         sdf=z  
     return sdf;
     
@@ -100,11 +94,16 @@ class ff:
       for i in self.first:
         print i+" "+self.first[i]
       for i in self.prod:
-        self.follow[i]=self.find_follow(i)
+        self.follow[i]="$"
+      for i in self.prod:
+        a=self.find_follow(i)
+        print "found for "+i+" is "+a
+        self.follow[i]=self.follow[i]+a
       print "follow table is"
-      for i in self.first:
+      for i in self.follow:
         print i+" "+self.follow[i]
-    
+      for i in self.prod:
+        print i
     
 obj=ff()
 obj.main()
